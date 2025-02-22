@@ -1,0 +1,29 @@
+name: Build Solution
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet Packages
+        run: nuget restore YourSolution.sln
+
+      - name: Build Solution
+        run: msbuild YourSolution.sln /p:Configuration=Release /p:Platform="Any CPU"
