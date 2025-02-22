@@ -1,12 +1,9 @@
-name: Build Solution
+name: Build and Release
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - 'v*'  # Triggers when a new version tag (e.g., v1.0.0) is pushed
 
 jobs:
   build:
@@ -23,14 +20,35 @@ jobs:
         uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet Packages
-        run: nuget restore YourSolution.sln
+        run: nuget restore BitCrack.sln
 
       - name: Build Solution
         run: msbuild BitCrack.sln /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Upload Build Artifacts
+      - name: Find the built EXE
+        run: |
+          echo "BUILD_PATH=$(Get-ChildItem -Path x64/Release/clBitCrack.exe | Select-Object -ExpandProperty FullName)" >> $GITHUB_ENV
+        shell: pwsh
+
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: build-output
-          path: x64/Release
+          name: compiled-exe
+          path: ${{ env.BUILD_PATH }}
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: compiled-exe
+          path: release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
