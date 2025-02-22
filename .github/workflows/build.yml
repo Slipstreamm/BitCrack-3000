@@ -30,11 +30,12 @@ jobs:
           echo "BUILD_PATH=$(Get-ChildItem -Path x64/Release/clBitCrack.exe | Select-Object -ExpandProperty FullName)" >> $GITHUB_ENV
         shell: pwsh
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: compiled-exe
-          path: ${{ env.BUILD_PATH }}
+          name: build-output-${{ matrix.os }}
+          path: path/to/your/compiled/files
+
 
   release:
     needs: build
